@@ -1,0 +1,2 @@
+curl_cffi
+python-telegram-bot[job-queue]>=21

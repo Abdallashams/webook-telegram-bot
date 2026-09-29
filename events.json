@@ -1,0 +1,174 @@
+[
+  {
+    "__typename": "Event",
+    "sys": {
+      "id": "Sv3GpORUqBTIFIaZu7S8CC"
+    },
+    "id": "Zain, Queen of all Hearts ",
+    "title": "Zain, Queen of all Hearts",
+    "subtitle": null,
+    "slug": "zain-queen-of-all-hearts",
+    "ticketingUrlSlug": "zain-queen-of-all-hearts",
+    "image11": {
+      "title": "Zain, Queen of all Hearts – Theatre Show ",
+      "sys": {
+        "id": "rTh6NolgtREUYFeO4Zw6te",
+        "publishedAt": "2026-09-20T06:47:47.147Z"
+      },
+      "url": "https://images.cmscloud.ai/d56e1636-11c2-4a8b-8195-2256d8cea670/10dd8be0-9ff1-4624-938a-185e5040686e/rTh6NolgtREUYFeO4Zw6te/f9046320-ca2b-43e4-ad3e-bf595fd1813e/1080x1080_wbk.jpg",
+      "width": 756,
+      "height": 756,
+      "contentType": "image/jpeg"
+    },
+    "image31": {
+      "title": "Zain, Queen of all Hearts – Theatre Show",
+      "sys": {
+        "id": "ZL6u8MrxOKPQMYwQyO14M7",
+        "publishedAt": "2026-09-10T12:34:52.572Z"
+      },
+      "url": "https://images.cmscloud.ai/d56e1636-11c2-4a8b-8195-2256d8cea670/10dd8be0-9ff1-4624-938a-185e5040686e/ZL6u8MrxOKPQMYwQyO14M7/2a6ba617-ca2e-4025-84f7-f3f20b4c524d/1280x426_wbk_jpg.jpg",
+      "width": 2800,
+      "height": 932,
+      "contentType": "image/jpeg"
+    },
+    "startingPrice": 150,
+    "discountedPrice": null,
+    "currencyCode": "SAR",
+    "schedule": {
+      "title": "Zain, Queen of all Hearts",
+      "openTitle": "Starting from",
+      "openDateTime": "2026-09-27T18:30:00.000+03:00",
+      "closeDateTime": "2026-10-02T22:45:00.000+03:00",
+      "openScheduleText": null
+    },
+    "isStreamingEvent": false,
+    "zoneEntryIncluded": false,
+    "streamingUrl": null,
+    "buttonLabel": "Book tickets",
+    "eventType": "internal",
+    "buttonLink": null,
+    "zone": null,
+    "location": {
+      "title": "The Venue",
+      "address": "The Venue",
+      "city": "Riyadh",
+      "cityCode": "RUH",
+      "countryCode": "SA",
+      "seactionHeader": null,
+      "googlePlaceName": "PzgwSTuy4nV7e8wZ8",
+      "location": {
+        "lat": 24.744751963069003,
+        "lon": 46.60027215677977
+      },
+      "banner": {
+        "title": "Generic Location Map",
+        "sys": {
+          "id": "6exWlhuVTQYKuFNXwDOU37",
+          "publishedAt": "2023-10-05T20:51:39.173Z"
+        },
+        "url": "https://images.cmscloud.ai/d56e1636-11c2-4a8b-8195-2256d8cea670/10dd8be0-9ff1-4624-938a-185e5040686e/6exWlhuVTQYKuFNXwDOU37/7c20ab32-a0d2-42dc-bf31-2d2a04e51e7a/image (45).png",
+        "width": 716,
+        "height": 372,
+        "contentType": "image/png"
+      },
+      "accessibility": true
+    },
+    "category": {
+      "id": "Theater  ",
+      "title": "Theater",
+      "slug": "theater-and-performing-arts"
+    },
+    "isComingSoon": false,
+    "organizationSlug": null,
+    "carousalCollection": {
+      "items": []
+    },
+    "deal": null
+  },
+  {
+    "__typename": "Event",
+    "sys": {
+      "id": "urmfwXyfb0UzlFb0yznXEb"
+    },
+    "id": "Al-Hilal VS Al-Ittihad",
+    "title": "Al-Hilal VS Al-Ittihad",
+    "subtitle": " ",
+    "slug": "rsl-26-27-al-hilal-vs-al-ittihad-1789832546",
+    "ticketingUrlSlug": null,
+    "image11": {
+      "title": "Al-Hilal vs Al-Ittihad – RSL",
+      "sys": {
+        "id": "WJcJFgsZ46DkLRhGf8DVmK",
+        "publishedAt": "2026-09-27T10:05:46.221Z"
+      },
+      "url": "https://images.cmscloud.ai/d56e1636-11c2-4a8b-8195-2256d8cea670/10dd8be0-9ff1-4624-938a-185e5040686e/WJcJFgsZ46DkLRhGf8DVmK/66ab2fb0-89f0-4c43-b794-828e795b8e5a/TICKETS-1280x1280-Al-Ittihad.jpg_1_.jpeg",
+      "width": 1280,
+      "height": 1280,
+      "contentType": "image/jpeg"
+    },
+    "image31": {
+      "title": "Al-Hilal vs Al-Ittihad – RSL",
+      "sys": {
+        "id": "ieXOZffiRPVmVU0sWp2UM7",
+        "publishedAt": "2026-09-27T10:05:42.247Z"
+      },
+      "url": "https://images.cmscloud.ai/d56e1636-11c2-4a8b-8195-2256d8cea670/10dd8be0-9ff1-4624-938a-185e5040686e/ieXOZffiRPVmVU0sWp2UM7/46bc4371-190d-471b-bce5-64132e10c1c8/TICKETS-1400x480-Al-Ittihad.jpg",
+      "width": 1400,
+      "height": 480,
+      "contentType": "image/jpeg"
+    },
+    "startingPrice": 30,
+    "discountedPrice": null,
+    "currencyCode": "SAR",
+    "schedule": {
+      "title": "Al-Hilal VS Al-Ittihad",
+      "openTitle": "Starting from",
+      "openDateTime": "2026-10-10T21:00:00.000+03:00",
+      "closeDateTime": "2026-10-10T23:00:00.000+03:00",
+      "openScheduleText": null
+    },
+    "isStreamingEvent": false,
+    "zoneEntryIncluded": false,
+    "streamingUrl": null,
+    "buttonLabel": null,
+    "eventType": "internal",
+    "buttonLink": null,
+    "zone": null,
+    "location": {
+      "title": "Kingdom Arena",
+      "address": "Kingdom Arena",
+      "city": "Riyadh",
+      "cityCode": "RUH",
+      "countryCode": "SA",
+      "seactionHeader": null,
+      "googlePlaceName": null,
+      "location": {
+        "lat": 24.777938839624454,
+        "lon": 46.60617077511085
+      },
+      "banner": {
+        "title": "Generic Location Map",
+        "sys": {
+          "id": "6exWlhuVTQYKuFNXwDOU37",
+          "publishedAt": "2023-10-05T20:51:39.173Z"
+        },
+        "url": "https://images.cmscloud.ai/d56e1636-11c2-4a8b-8195-2256d8cea670/10dd8be0-9ff1-4624-938a-185e5040686e/6exWlhuVTQYKuFNXwDOU37/7c20ab32-a0d2-42dc-bf31-2d2a04e51e7a/image (45).png",
+        "width": 716,
+        "height": 372,
+        "contentType": "image/png"
+      },
+      "accessibility": false
+    },
+    "category": {
+      "id": "Sports  ",
+      "title": "Sports",
+      "slug": "sports-event"
+    },
+    "isComingSoon": false,
+    "organizationSlug": null,
+    "carousalCollection": {
+      "items": []
+    },
+    "deal": null
+  }
+]
