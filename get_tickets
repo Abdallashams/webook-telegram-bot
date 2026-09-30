@@ -1,0 +1,341 @@
+"""
+pip install curl_cffi
+
+Windows (PowerShell):  $env:WEBOOK_TOKEN="xxxx"
+Linux/Mac:             export WEBOOK_TOKEN="xxxx"
+
+python webook_bot.py
+python webook_bot.py --debug     # يطبع أول رد خام من الـ resale API
+"""
+import json
+import math
+import os
+import sys
+import time
+from datetime import datetime, timezone
+
+from curl_cffi import requests
+
+# =========================================================
+# CONFIG
+# =========================================================
+EVENTS_URL = "https://cdn.webook.com/"
+RESALE_BASE_URL = "https://api.webook.com/api/v2/resale-listing"
+
+TOKEN = os.getenv("WEBOOK_TOKEN", "").strip()
+DEBUG = "--debug" in sys.argv
+
+if not TOKEN:
+    raise SystemExit("WEBOOK_TOKEN is not set")
+
+# مفيش user-agent ولا sec-ch-ua: impersonate="chrome" بيضبطهم
+EVENT_HEADERS = {
+    "accept": "*/*",
+    "accept-language": "ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7",
+    "content-type": "application/json",
+    "origin": "https://resell.webook.com",
+    "referer": "https://resell.webook.com/",
+}
+
+RESALE_HEADERS = {
+    "accept": "application/json",
+    "accept-language": "ar-EG,ar;q=0.9,en-US;q=0.8,en;q=0.7",
+    "content-type": "application/json",
+    "origin": "https://resell.webook.com",
+    "referer": "https://resell.webook.com/",
+    "token": TOKEN,
+}
+
+# =========================================================
+# GRAPHQL QUERY (أخف من الأصلي، بنفس الفلاتر)
+# =========================================================
+QUERY = (
+    "query getEventListing($lang:String,$limit:Int,$skip:Int,$where:EventFilter,$order:[EventOrder])"
+    "{eventCollection(locale:$lang,limit:$limit,skip:$skip,where:$where,order:$order){total items{"
+    "__typename sys{id}id title slug ticketingUrlSlug startingPrice currencyCode "
+    "schedule{openDateTime closeDateTime}buttonLabel buttonLink eventType "
+    "location{title address city cityCode countryCode}category{id title slug}}}}"
+)
+
+
+def build_payload(skip, limit):
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    return {
+        "query": QUERY,
+        "variables": {
+            "order": ["order_ASC", "sys_publishedAt_DESC"],
+            "lang": "en-US",
+            "limit": limit,
+            "skip": skip,
+            "where": {
+                "visibility_not": "private",
+                "OR": [
+                    {"schedule": {"closeDateTime_exists": False}},
+                    {"schedule": {"closeDateTime_gte": now}},
+                ],
+                "AND": [
+                    {"visibility_not": "private"},
+                    {"showResellBanner": True},
+                    {},
+                    {},
+                    {},
+                    {
+                        "OR": [
+                            {"location": {"countryCode": "sa"}},
+                            {"location": {"countryCode": "SA"}},
+                        ]
+                    },
+                ],
+            },
+        },
+        "operationName": "getEventListing",
+    }
+
+
+# =========================================================
+# EVENTS
+# =========================================================
+def get_events():
+    limit = 50
+    skip = 0
+    events = []
+
+    while True:
+        r = requests.post(
+            EVENTS_URL,
+            headers=EVENT_HEADERS,
+            json=build_payload(skip, limit),
+            impersonate="chrome",
+            timeout=30,
+        )
+        print(f"Events status (skip={skip}):", r.status_code)
+
+        try:
+            data = r.json()
+        except Exception:
+            print("الرد مش JSON:", r.text[:500])
+            return events
+
+        if data.get("errors"):
+            print("GraphQL errors:", json.dumps(data["errors"], ensure_ascii=False)[:1000])
+            return events
+
+        coll = data["data"]["eventCollection"]
+        items = coll.get("items") or []
+        events.extend(items)
+
+        if not items or len(events) >= coll.get("total", 0):
+            break
+        skip += limit
+        time.sleep(0.3)
+
+    return events
+
+
+def event_slug(event):
+    # لو الـ resale مابيشتغلش بالـ slug ده، جرّب event["slug"] بدله
+    return event.get("ticketingUrlSlug") or event.get("slug")
+
+
+def print_events(events):
+    print("\n" + "=" * 70)
+    print("AVAILABLE EVENTS")
+    print("=" * 70)
+
+    if not events:
+        print("No events found.")
+        return
+
+    for i, ev in enumerate(events, start=1):
+        loc = ev.get("location") or {}
+        print(f"\n[{i}] {ev.get('title', 'Unknown')}")
+        print(f"    City : {loc.get('city', '')}")
+        print(f"    From : {ev.get('startingPrice')} {ev.get('currencyCode', '')}")
+        print(f"    Slug : {ev.get('ticketingUrlSlug')} | {ev.get('slug')}")
+
+
+def choose_event(events):
+    while True:
+        choice = input("\nChoose event number: ").strip()
+        if choice.isdigit() and 1 <= int(choice) <= len(events):
+            return events[int(choice) - 1]
+        print("Invalid number.")
+
+
+# =========================================================
+# RESALE
+# =========================================================
+def get_resale_listings(slug):
+    all_listings = []
+    page = 1
+
+    while True:
+        params = {
+            "lang": "en",
+            "visible_in": "resell-webook",
+            "page": page,
+            "per_page": 100,
+        }
+        print(f"Getting resale page {page}...")
+
+        r = requests.get(
+            f"{RESALE_BASE_URL}/{slug}",
+            params=params,
+            headers=RESALE_HEADERS,
+            impersonate="chrome",
+            timeout=30,
+        )
+        print("Status:", r.status_code)
+
+        if r.status_code in (401, 403):
+            print("التوكن غالبًا منتهي أو مرفوض. جدّده من المتصفح.")
+            print(r.text[:300])
+            break
+        if r.status_code != 200:
+            print(r.text[:500])
+            break
+
+        try:
+            data = r.json()
+        except Exception:
+            print("الرد مش JSON:", r.text[:500])
+            break
+
+        if DEBUG and page == 1:
+            print(json.dumps(data, ensure_ascii=False, indent=2)[:3000])
+
+        listings = data.get("data") or []
+        if isinstance(listings, dict):  # احتياط لو الشكل مختلف
+            listings = listings.get("items") or listings.get("listings") or []
+        all_listings.extend(listings)
+
+        meta = data.get("meta") or {}
+        current = meta.get("current_page", page)
+        last = meta.get("last_page", page)
+        print(f"Page {current}/{last} | Listings: {len(listings)}")
+
+        if not listings or current >= last:
+            break
+        page += 1
+        time.sleep(0.5)
+
+    return all_listings
+
+
+def extract_tickets(listings):
+    tickets = []
+    for lst in listings:
+        cur = lst.get("currency", "SAR")
+        for t in lst.get("tickets") or []:
+            tickets.append(
+                {
+                    "listing_id": lst.get("_id"),
+                    "ticket_id": t.get("_id"),
+                    "section": t.get("section"),
+                    "row": t.get("row"),
+                    "seat": t.get("seat"),
+                    "gate": t.get("gate"),
+                    "block": t.get("block"),
+                    "ticket_price": t.get("price"),
+                    "base_price": t.get("base_price"),
+                    "resale_price": t.get("resale_price"),
+                    "currency": t.get("currency", cur),
+                    "vat": t.get("vat"),
+                    "selling_option": lst.get("selling_option"),
+                    "listing_title": lst.get("tickets_title"),
+                    "listing_price": lst.get("price"),
+                    "ticket_category": (t.get("ticket_category") or {}).get("title"),
+                    "ticket_group": (t.get("ticket_group") or {}).get("title"),
+                }
+            )
+    return tickets
+
+
+def print_tickets(tickets, page=1, per_page=20):
+    total = len(tickets)
+    total_pages = max(1, math.ceil(total / per_page))
+    start = (page - 1) * per_page
+    chunk = tickets[start:start + per_page]
+
+    print("\n" + "=" * 80)
+    print(f"TICKETS | PAGE {page}/{total_pages} | TOTAL {total}")
+    print("=" * 80)
+
+    if not chunk:
+        print("No tickets.")
+        return
+
+    for i, t in enumerate(chunk, start=start + 1):
+        print(f"\nTicket #{i}")
+        print(f"  Section : {t['section']}")
+        print(f"  Row     : {t['row']}")
+        print(f"  Seat    : {t['seat']}")
+        print(f"  Gate    : {t['gate']}")
+        print(f"  Block   : {t['block']}")
+        print(f"  Price   : {t['resale_price']} {t['currency']}")
+        print(f"  Base    : {t['base_price']} {t['currency']}")
+        print(f"  VAT     : {t['vat']}")
+        print(f"  Category: {t['ticket_category']}")
+        print(f"  Group   : {t['ticket_group']}")
+        print(f"  Listing : {t['listing_id']}")
+
+
+# =========================================================
+# MAIN
+# =========================================================
+def main():
+    print("\n" + "=" * 70)
+    print("WEBOOK TICKET BOT")
+    print("=" * 70)
+
+    print("\nGetting events...")
+    events = get_events()
+    print_events(events)
+    if not events:
+        return
+
+    ev = choose_event(events)
+    slug = event_slug(ev)
+
+    print("\n" + "=" * 70)
+    print("SELECTED EVENT")
+    print("=" * 70)
+    print("Title:", ev.get("title"))
+    print("Slug :", slug)
+
+    if not slug:
+        print("This event does not have a resale slug.")
+        return
+
+    print("\nGetting tickets...")
+    listings = get_resale_listings(slug)
+    print(f"\nTotal listings received: {len(listings)}")
+
+    tickets = extract_tickets(listings)
+    print(f"Total tickets received: {len(tickets)}")
+
+    with open("tickets.json", "w", encoding="utf-8") as f:
+        json.dump(tickets, f, ensure_ascii=False, indent=2)
+    print("Saved to tickets.json")
+
+    # عرض التذاكر صفحة صفحة
+    per_page = 20
+    page = 1
+    total_pages = max(1, math.ceil(len(tickets) / per_page))
+    while True:
+        print_tickets(tickets, page=page, per_page=per_page)
+        if page >= total_pages:
+            break
+        if input("\nEnter = the next page || q = exit: ").strip().lower() == "q":
+            break
+        page += 1
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+ 
